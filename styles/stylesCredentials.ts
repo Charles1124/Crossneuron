@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native'
 
-export const loginStyles = StyleSheet.create({
+export const stylesCredentials = StyleSheet.create({
     scrollContent: {
         flexGrow: 1,
         padding: 20,
@@ -41,14 +41,11 @@ export const loginStyles = StyleSheet.create({
         alignItems: 'center',
     },
     inputContainer: {
-        position: 'relative',
-        width: '90%',
-    },
-    icon: {
-        position: 'absolute',
-        right: 15,
-        top: '50%',
-        transform: [{ translateY: -12 }],
+        width: '80%', 
+        flexDirection: 'row',
+        alignItems: 'center', 
+        justifyContent: 'space-between', 
+        gap: 10, 
     },
     input: {
         borderRadius: 10,
@@ -122,5 +119,52 @@ export const loginStyles = StyleSheet.create({
     links: {
         alignItems: 'center',
         gap: 15,
-    }
+    }, 
+    linksText: {
+        fontSize: 14, 
+        fontWeight: 'bold', 
+        color: 'rgba(70, 165, 228, 0.877)',
+    },
+    buttonRegister: {
+        borderRadius: 9,
+        padding: 9,
+        alignItems: 'center',
+        backgroundColor: 'rgb(34, 131, 196)',
+        width: '60%',
+    },
+    textRegister: {
+        fontSize: 15,
+        color: '#fff',
+        fontWeight: '600',
+    }, 
+    listContainer: {
+        width: '80%',
+        maxWidth: 300, 
+        minWidth: 200, 
+        backgroundColor: "#c4c4c42c", 
+        borderRadius: 10, 
+        padding: 10, 
+        gap: 10, 
+    },
+    listText: {
+        fontSize: 14,
+        color: '#000', 
+        fontWeight: '600',
+    },
+    requiredPassword: {
+        flexDirection: 'row',  
+        gap: 15,
+    }, 
+    buttonForgotPassword: {
+        borderRadius: 9,
+        padding: 9,
+        alignItems: 'center',
+        backgroundColor: 'rgb(34, 131, 196)',
+        width: '60%',
+    },
+    textForgotPassword: {
+        fontSize: 15,
+        color: '#fff',
+        fontWeight: '600',
+    },
 })
