@@ -1,5 +1,5 @@
 import { LucideIcon } from "lucide-react-native"
-import { homeComponents as styles, categoryGradients } from "../styles/HomeComponents" 
+import { homeComponents as styles, categoryGradients } from "../../styles/HomeComponents" 
 import { View, Text, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 

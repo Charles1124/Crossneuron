@@ -3,8 +3,8 @@ import { View, Text, ScrollView } from 'react-native';
 import { RootStackParamList } from '../App';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { stylesHome as styles } from '../styles/HomeStyles';
-import { HeroCarousel } from '../components/HeroCarousel';
-import { CategoryCard } from '../components/CategoryCard';
+import { HeroCarousel } from '../components/ui/HeroCarousel';
+import { CategoryCard } from '../components/ui/CategoryCard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Brain, Target, Zap, Heart } from 'lucide-react-native';
 

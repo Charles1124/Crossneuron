@@ -1,5 +1,5 @@
 import { View, Text, ScrollView } from 'react-native';
-import { CategoryCard } from '../components/CategoryCard';
+import { CategoryCard } from '../components/ui/CategoryCard';
 import { Shapes, Palette, Workflow } from 'lucide-react-native';
 import { GamesMenu as styles } from '../styles/GamesMenuStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -43,7 +43,8 @@ export function GamesScreen({ navigation }: Props) {
                                 icon={Workflow}
                                 title='Patrón'
                                 description="Siga la pelota correcta y elija el patrón."
-                                color="calm"
+                                color="calm" 
+                                onPress={() => navigation.navigate('BallPatternGame')}
                             />
                         </View>
                     </View>

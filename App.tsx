@@ -6,7 +6,8 @@ import { ForgotPassword } from "./screens/ForgotPassword";
 import { HomeScreen } from "./screens/Home";
 import { GamesScreen } from "./screens/Games"
 import { ShapesGameScreen } from './Games/ShapesGame'; 
-import { ColorsGameScreen } from './Games/ColorsGame';
+import { ColorsGameScreen } from './Games/ColorsGame'; 
+import { BallPatternScreen } from './Games/BallPatternGame';
 
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";  
 import { NavigationContainer } from "@react-navigation/native";
@@ -19,7 +20,8 @@ export type RootStackParamList = {
   Home: undefined,
   ForgotPassword: undefined, 
   ShapesGame: undefined, 
-  ColorsGame: undefined,
+  ColorsGame: undefined, 
+  BallPatternGame: undefined,
 };
 
 export type HomeTabParamList= {
@@ -104,7 +106,8 @@ export default function App() {
         <Stack.Screen name="ForgotPassword" component={ForgotPassword}/> 
         <Stack.Screen name="Home" component={MainTabs}/> 
         <Stack.Screen name="ShapesGame" component={ShapesGameScreen}/> 
-        <Stack.Screen name="ColorsGame" component={ColorsGameScreen}/>
+        <Stack.Screen name="ColorsGame" component={ColorsGameScreen}/> 
+        <Stack.Screen name="BallPatternGame" component={BallPatternScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
