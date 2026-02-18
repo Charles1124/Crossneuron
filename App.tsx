@@ -5,7 +5,8 @@ import { Register } from "./screens/Register";
 import { ForgotPassword } from "./screens/ForgotPassword";
 import { HomeScreen } from "./screens/Home";
 import { GamesScreen } from "./screens/Games"
-import { Game1Screen } from './Games/Game1';
+import { ShapesGameScreen } from './Games/ShapesGame'; 
+import { ColorsGameScreen } from './Games/ColorsGame';
 
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";  
 import { NavigationContainer } from "@react-navigation/native";
@@ -17,7 +18,8 @@ export type RootStackParamList = {
   Register: undefined,
   Home: undefined,
   ForgotPassword: undefined, 
-  Game1: undefined,
+  ShapesGame: undefined, 
+  ColorsGame: undefined,
 };
 
 export type HomeTabParamList= {
@@ -101,6 +103,8 @@ export default function App() {
         <Stack.Screen name="Register" component={Register} /> 
         <Stack.Screen name="ForgotPassword" component={ForgotPassword}/> 
         <Stack.Screen name="Home" component={MainTabs}/> 
+        <Stack.Screen name="ShapesGame" component={ShapesGameScreen}/> 
+        <Stack.Screen name="ColorsGame" component={ColorsGameScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

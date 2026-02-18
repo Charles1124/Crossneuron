@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { View, Image, Animated, Easing } from 'react-native';
-import { homeComponents as styles } from "../styles/homeComponents";
+import { homeComponents as styles } from "../styles/HomeComponents";
 
 const slides = [
     { image: require("../assets/carousel-1.jpg") },

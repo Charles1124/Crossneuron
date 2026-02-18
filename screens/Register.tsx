@@ -7,7 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { KeyboardAvoidingView } from "react-native";
 import { RootStackParamList } from "../App";
-import { stylesCredentials as styles } from "../styles/stylesCredentials";
+import { stylesCredentials as styles } from "../styles/CredentialsStyles";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
  

@@ -2,7 +2,7 @@ import {
     View, Text, KeyboardAvoidingView, Platform, ScrollView,
     Image, TextInput, TouchableOpacity
 } from 'react-native';
-import { stylesCredentials as styles } from '../styles/stylesCredentials';
+import { stylesCredentials as styles } from '../styles/CredentialsStyles';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import { LinearGradient } from 'expo-linear-gradient';

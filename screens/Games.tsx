@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RootStackParamList } from "../App";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-type GamesScreenNavigationProp= NativeStackNavigationProp<RootStackParamList, 'Game1'>;
+type GamesScreenNavigationProp= NativeStackNavigationProp<RootStackParamList>;
 
 type Props={
     navigation: GamesScreenNavigationProp
@@ -30,13 +30,14 @@ export function GamesScreen({ navigation }: Props) {
                                 title='Figuras Geométricas'
                                 description="Elija la figura correcta del patrón."
                                 color="primary"
-                                onPress={() => navigation.navigate('Game1')}
+                                onPress={() => navigation.navigate('ShapesGame')}
                             />
                             <CategoryCard
                                 icon={Palette}
                                 title='Colores'
                                 description="Ejercicio con colores."
-                                color="accent"
+                                color="accent" 
+                                onPress={() => navigation.navigate('ColorsGame')}
                             />
                             <CategoryCard
                                 icon={Workflow}

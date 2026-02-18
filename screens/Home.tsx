@@ -2,7 +2,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { View, Text, ScrollView } from 'react-native';
 import { RootStackParamList } from '../App';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { stylesHome as styles } from '../styles/stylesHome';
+import { stylesHome as styles } from '../styles/HomeStyles';
 import { HeroCarousel } from '../components/HeroCarousel';
 import { CategoryCard } from '../components/CategoryCard';
 import { LinearGradient } from 'expo-linear-gradient';
