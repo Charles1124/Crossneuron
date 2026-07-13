@@ -1,7 +1,7 @@
 import { ViewStyle, StyleProp, View } from "react-native";
-import Svg, { Circle, Rect, Path } from "react-native-svg";
+import Svg, { Circle, Rect, Path, Ellipse } from "react-native-svg";
 
-export type ShapeType = "circle" | "square" | "triangle" | "star" | "hexagon";
+export type ShapeType = "circle" | "square" | "triangle" | "star" | "hexagon" | "oval" | "rectangle" | "pentagon";
 
 interface ShapeProps {
     type: ShapeType;
@@ -28,6 +28,15 @@ export const Shape = ({ type, style, color = "#000", size = 100, onPress }: Shap
 
             case "hexagon":
                 return <Path d="M 50 10 L 85 30 L 85 70 L 50 90 L 15 70 L 15 30 Z" fill={color} />;
+
+            case "oval":
+                return <Ellipse cx="50" cy="50" rx="40" ry="25" fill={color} />
+
+            case "rectangle":
+                return <Rect x="10" y="25" width="80" height="50" rx="6" fill={color} />;
+
+            case "pentagon":
+                return <Path d="M 50 10 L 90 35 L 75 80 L 25 80 L 10 35 Z" fill={color} />;
 
             default: return null;
         }

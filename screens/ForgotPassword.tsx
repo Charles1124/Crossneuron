@@ -1,6 +1,6 @@
 import {
     View, Text, KeyboardAvoidingView, Platform, ScrollView,
-    Image, TextInput, TouchableOpacity
+    Image, TextInput, TouchableOpacity, Alert, ActivityIndicator
 } from 'react-native';
 import { stylesCredentials as styles } from '../styles/CredentialsStyles';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -8,6 +8,8 @@ import { RootStackParamList } from '../App';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
+import { forgotPassword } from '../services/authService';
 
 type ForgotPasswordScreenNavigationProp = NativeStackNavigationProp<RootStackParamList,
     'ForgotPassword'>;
@@ -17,6 +19,29 @@ type Props = {
 }
 
 export function ForgotPassword({ navigation }: Props) {
+
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleForgotPassword = async () => {
+        if (!email) {
+            Alert.alert('Error', 'Por favor ingrese su correo electrónico');
+            return;
+        }
+        setLoading(true);
+
+        try {
+            await forgotPassword(email);
+            Alert.alert('Correo envíado', 'Se ha enviado un correo para restablecer su contraseña',
+                [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+            );
+        } catch (e: any) {
+            Alert.alert('Error', e.message);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
         <LinearGradient colors={['#B3E5FC', '#E1F5FE']}
             style={{ flex: 1 }}>
@@ -35,11 +60,12 @@ export function ForgotPassword({ navigation }: Props) {
                             <View style={styles.form}>
                                 <View style={styles.inputContainer}>
                                     <TextInput placeholder="example@gmail.com" placeholderTextColor="#ccc"
-                                        autoCapitalize="none" style={styles.input} keyboardType="email-address" />
-                                    <Ionicons name="mail-outline" size={23} color={"#000"}/>
+                                        autoCapitalize="none" style={styles.input} keyboardType="email-address"  
+                                        value={email} onChangeText={setEmail}/>
+                                    <Ionicons name="mail-outline" size={23} color={"#000"} />
                                 </View>
-                                <TouchableOpacity style={styles.buttonForgotPassword}>
-                                    <Text style={styles.textForgotPassword}> Enviar Correo </Text>
+                                <TouchableOpacity style={styles.buttonForgotPassword} onPress={handleForgotPassword} disabled={loading}>
+                                    {loading ? <ActivityIndicator color="#fff"/> : <Text style={styles.textForgotPassword}> Enviar Correo </Text>}
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.links}>

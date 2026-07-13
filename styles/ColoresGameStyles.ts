@@ -51,6 +51,34 @@ export const ColorsGameStyles = StyleSheet.create({
         alignItems: 'center',
         minWidth: 280,
     },
+    cardLabel: {
+        fontSize: 16, 
+        color: '#000',
+        marginBottom: 15,
+    },
+    cardTime: {
+        fontSize: 56, 
+        fontWeight: '700', 
+        color: '#000', 
+        letterSpacing: 2, 
+        marginBottom: 20,
+    },
+    pauseProgressBar: {
+        width: '100%', 
+        marginBottom: 40,
+    },
+    pauseProgressTrack: {
+        width: '100%',
+        height: 12, 
+        backgroundColor: '#D1D5DB',
+        borderRadius: 99, 
+        overflow: 'hidden',
+    },
+    pauseProgressFill: {
+        height: '100%', 
+        backgroundColor: '#2283C4',
+        borderRadius: 99,
+    },
     settingsCard: {
         backgroundColor: '#fff',
         borderRadius: 16,
@@ -94,6 +122,7 @@ export const ColorsGameStyles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 32,
         borderRadius: 8,
+        marginVertical: 15, 
     },
     resumeButtonText: {
         color: '#fff',
@@ -143,5 +172,11 @@ export const ColorsGameStyles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
+    },
+    gradientBar:{
+        width: '80%', 
+        height: 10, 
+        borderRadius: 99, 
+        marginBottom: 24, 
     },
 })

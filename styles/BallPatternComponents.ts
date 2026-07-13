@@ -3,8 +3,6 @@ import { StyleSheet } from "react-native"
 
 export const BallPatternComponents = StyleSheet.create({
 
-    //Estilos para las pelotas. 
-
     ball: {
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
@@ -19,10 +17,9 @@ export const BallPatternComponents = StyleSheet.create({
         backgroundColor: '#E11D48',
     },
 
-    //Estilos GameArena
     arena: {
         width: '100%',
-        height: 400,
+        flex: 1,
         backgroundColor: '#c7c4c4',
         borderRadius: 16,
         overflow: 'hidden',
@@ -35,10 +32,8 @@ export const BallPatternComponents = StyleSheet.create({
         opacity: 0.05,
     },
 
-    //Estilos fases de juego 
-
     gameControls: {
-        padding: 16,
+        padding: 8,
         alignItems: 'center',
         gap: 12,
     },
@@ -61,7 +56,7 @@ export const BallPatternComponents = StyleSheet.create({
     },
     buttonReset: {
         backgroundColor: "#7c3aed",
-        marginTop: 12,
+        marginTop: 4,
     },
     buttonDisabled: {
         backgroundColor: "#374151",
@@ -133,10 +128,10 @@ export const BallPatternComponents = StyleSheet.create({
 
     result: {
         alignItems: "center",
-        gap: 12,
+        gap: 4,
     },
     resultMessage: {
-        paddingVertical: 14,
+        paddingVertical: 10,
         paddingHorizontal: 28,
         borderRadius: 12,
         borderWidth: 1,
@@ -153,20 +148,65 @@ export const BallPatternComponents = StyleSheet.create({
         color: "#ccc",
         fontSize: 20,
         fontWeight: "700",
-    }, 
+    },
 
-    //Estilos para el indicador del patrón 
+    idlePanel: {
+        alignItems: 'center',
+        gap: 14,
+        width: '100%',
+    },
+    idleStats: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255,255,255,0.08)',
+        borderRadius: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        gap: 12,
+    },
+    idleStat: {
+        alignItems: 'center',
+        gap: 2,
+    },
+    idleStatLabel: {
+        fontSize: 10,
+        fontWeight: '600',
+        color: '#9ca3af',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    idleStatValue: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#e5e7eb',
+    },
+    idleStatDivider: {
+        width: 1,
+        height: 28,
+        backgroundColor: 'rgba(255,255,255,0.12)',
+    },
+
+    resultMeta: {
+        marginTop: 4,
+        marginBottom: 4,
+    },
+    resultMetaText: {
+        color: '#9ca3af',
+        fontSize: 13,
+        fontWeight: '500',
+    },
+
     patternIndicator: {
         backgroundColor: ' hsla(0, 0%, 100%, 0.8)',
-        padding: 8, 
-        paddingHorizontal: 16, 
-        borderRadius: 13, 
-        alignItems: 'center', 
-        gap: 8, 
-    }, 
+        padding: 8,
+        paddingHorizontal: 16,
+        borderRadius: 13,
+        alignItems: 'center',
+        gap: 8,
+    },
     textIndicator: {
-        fontSize: 14, 
-        fontWeight: '500', 
+        fontSize: 14,
+        fontWeight: '500',
         color: 'hsl(215, 16%, 47%)',
     },
 })

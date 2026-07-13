@@ -1,6 +1,7 @@
 import {
     View, Text, Platform, Image, ScrollView, TextInput,
-    TouchableOpacity
+    TouchableOpacity,
+    Alert, ActivityIndicator
 } from 'react-native'
 import { KeyboardAvoidingView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -10,7 +11,9 @@ import { stylesCredentials as styles } from '../styles/CredentialsStyles'
 import { useState } from 'react'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { RootStackParamList } from '../App'
-
+import { loginWithEmail, loginWithApple, logout } from '../services/authService';
+import * as AppleAuthentication from 'expo-apple-authentication'
+import * as Crypto from 'expo-crypto'
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -18,12 +21,65 @@ type Props = {
     navigation: LoginScreenNavigationProp;
 };
 
+
+
 export function Login({ navigation }: Props) {
 
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [isVisible, setIsVisible] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const togglePasswordVisibility = () => {
         setIsVisible(!isVisible);
+    }
+
+    const handleLogin = async () => {
+        if (!email || !password) {
+            Alert.alert('Error', 'Por favor ingrese su correo y contraseña');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const user= await loginWithEmail(email, password);
+            if(!user.emailVerified){
+            await logout();     
+                Alert.alert('Usuario no verificado', 'Por favor verifica tu correo antes de iniciar sesión.');  
+                return; 
+            }
+            navigation.navigate('Home');
+        } catch (e: any) {
+            Alert.alert('Error', e.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAppleLogin = async () => {
+        setLoading(true);
+
+        try {
+            const nonce = Math.random().toString(36).substring(2, 10);
+            const hashedNonce = await Crypto.digestStringAsync(
+                Crypto.CryptoDigestAlgorithm.SHA256, nonce
+            );
+            const credential = await AppleAuthentication.signInAsync({
+                requestedScopes: [
+                    AppleAuthentication.AppleAuthenticationScope.EMAIL,
+                    AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+                ],
+                nonce: hashedNonce,
+            }); 
+            await loginWithApple(credential.identityToken!, nonce); 
+            navigation.navigate('Home'); 
+        } catch (e: any) {
+            if (e.code !== 'ERR_REQUEST_CANCELED') {
+                Alert.alert('Error', e.message);
+            }
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
@@ -48,13 +104,15 @@ export function Login({ navigation }: Props) {
                                 { /* Input Email */}
                                 <View style={styles.inputContainer}>
                                     <TextInput placeholder="example@gmail.com" placeholderTextColor="#888"
-                                        style={styles.input} keyboardType="email-address" autoCapitalize="none" />
-                                    <Ionicons name="mail-outline" 
+                                        style={styles.input} keyboardType="email-address" autoCapitalize="none" 
+                                        value={email} onChangeText={setEmail}/>
+                                    <Ionicons name="mail-outline"
                                         size={23} color={"#000"} />
                                 </View>
                                 <View style={styles.inputContainer}>
                                     <TextInput placeholder="Contraseña" placeholderTextColor="#888"
-                                        style={styles.input} autoCapitalize="none" secureTextEntry={!isVisible} />
+                                        style={styles.input} autoCapitalize="none" secureTextEntry={!isVisible} 
+                                        value={password} onChangeText={setPassword}/>
                                     <TouchableOpacity onPress={togglePasswordVisibility}>
                                         {isVisible ? (<Ionicons name="eye-outline"
                                             size={23} color={"#000"} />)
@@ -64,8 +122,8 @@ export function Login({ navigation }: Props) {
                                             )}
                                     </TouchableOpacity>
                                 </View>
-                                <TouchableOpacity style={styles.buttonLogin}>
-                                    <Text style={styles.textLogin}> Iniciar Sesión </Text>
+                                <TouchableOpacity style={styles.buttonLogin} onPress={handleLogin} disabled={loading}>
+                                    {loading ? <ActivityIndicator color="#fff"/> : <Text style={styles.textLogin}> Iniciar Sesión </Text>}
                                 </TouchableOpacity>
 
                                 <View style={styles.divider}>
@@ -73,11 +131,12 @@ export function Login({ navigation }: Props) {
                                 </View>
 
                                 <View style={styles.socialButtons}>
-                                    <TouchableOpacity style={styles.socialButtonGmail}>
+                                    <TouchableOpacity style={styles.socialButtonGmail} onPress={() => Alert.alert('Próximamente', 'El inicio de sesión con Google estará disponible próximamente.')} 
+                                     disabled={loading}>
                                         <Image source={require('../assets/gmail.png')} style={styles.socialIcon} />
                                         <Text style={styles.socialTextGmail}> Gmail </Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity style={styles.socialButtonApple}>
+                                    <TouchableOpacity style={styles.socialButtonApple} onPress={handleAppleLogin} disabled={loading}>
                                         <Image source={require('../assets/apple-logo.png')} style={styles.socialIcon} />
                                         <Text style={styles.socialTextApple}> Apple </Text>
                                     </TouchableOpacity>

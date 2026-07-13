@@ -3,7 +3,7 @@
     "name": "Crossneuron",
     "slug": "Crossneuron",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/logo-negro.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,

@@ -2,16 +2,17 @@ import { RootStackParamList } from "../App";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ShapeGameStyles as styles } from '../styles/ShapeGameStyles';
 import { ShapeType, Shape } from "../components/ShapesGame/Shape";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TouchableOpacity, View, Text, ScrollView, Modal, TextInput } from "react-native";
 import { Pause, Play, LogOut, Settings } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Timer } from "../components/ShapesGame/Timer"
+import { Timer } from "../components/ShapesGame/Timer";
+import { useGamePhase } from "../hooks/UseGamePhase";
 
 type ShapesGameScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ShapesGame'>;
 
 type Props = {
-    navigation: ShapesGameScreenNavigationProp
+    navigation: ShapesGameScreenNavigationProp;
 }
 
 const SHAPES: ShapeType[] = ["circle", "square", "triangle", "star", "hexagon"];
@@ -21,74 +22,158 @@ const SHAPE_COLORS: Record<ShapeType, string> = {
     triangle: "#FFD93D",
     star: "#b909ff",
     hexagon: "#1621bd",
-}
-
+    oval: "#000000",
+    rectangle: "#808080",
+    pentagon: "#1621bd",
+};
 
 export function ShapesGameScreen({ navigation }: Props) {
 
-    const [configGame, setConfigGame] = useState(30);
-    const [configRound, setConfigRound] = useState(5);
-    const [gameTime, setGameTime] = useState(configGame);
-    const [roundTime, setRoundTime] = useState(configRound);
+    const [configGame, setConfigGame] = useState(90);
+    const [gameTime, setGameTime] = useState(90);
+    const [roundTime, setRoundTime] = useState(5);
     const [score, setScore] = useState(0);
     const [elegir, setElegir] = useState<ShapeType[]>([]);
-    const [target, setTarget] = useState<ShapeType>("circle");
+    const [target, setTarget] = useState<ShapeType[]>([]);
+    const [selected, setSelected] = useState<ShapeType[]>([]);
     const [isPlaying, setIsPlaying] = useState(false);
     const [gameOver, setGameOver] = useState(false);
     const [feedBack, setFeedBack] = useState<{ type: 'success' | 'error', message: string } | null>(null);
     const [showSettings, setShowSettings] = useState(false);
     const [isPaused, setPaused] = useState(false);
+    const [streak, setStreak] = useState(0);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [inhibition, setInhibition] = useState<ShapeType | null>(null);
+
+    const { currentPhase, check, savedScore, saveScore } = useGamePhase();
+
+    // Refs para evitar closures stale
+    const currentPhaseRef = useRef(currentPhase);
+    const roundTimeRef = useRef(roundTime);
+    const isFirstRender = useRef(true);
+    const roundsStartTimeRef = useRef<number>(0);
+    const targetRef = useRef(target);
+    const selectedRef = useRef(selected);
+    const scoreRef = useRef(score);
+    const streakRef = useRef(streak);
+    const inhibitionRef = useRef(inhibition);
+
+    useEffect(() => { currentPhaseRef.current = currentPhase; }, [currentPhase]);
+    useEffect(() => { roundTimeRef.current = roundTime; }, [roundTime]);
+
+    useEffect(() => { targetRef.current = target; }, [target]);
+    useEffect(() => { selectedRef.current = selected; }, [selected]);
+    useEffect(() => { inhibitionRef.current = inhibition; }, [inhibition]);
+
+    useEffect(() => { streakRef.current = streak; }, [streak]);
+    useEffect(() => { scoreRef.current = score; }, [score]);
 
     const generarNuevaRonda = useCallback(() => {
-        const shuffled = [...SHAPES].sort(() => Math.random() - 0.5);
-        const elegir = shuffled.slice(0, 3);
-        const target = elegir[Math.floor(Math.random() * elegir.length)];
+        const phase = currentPhaseRef.current;
+        const shuffled = [...(phase.shapes as ShapeType[])].sort(() => Math.random() - 0.5);
+        const nuevoTarget = shuffled.slice(0, phase.target);
+        const remaining = shuffled.filter(s => !nuevoTarget.includes(s));
+        const distractors = remaining.slice(0, phase.distractors);
+        const seleccion = [...nuevoTarget, ...distractors].sort(() => Math.random() - 0.5) as ShapeType[];
 
-        setElegir(elegir);
-        setTarget(target);
-        setRoundTime(configRound);
+        let newInhibition: ShapeType | null = null;
+        if (phase.inhibition && Math.random() < 0.4) {
+            newInhibition = nuevoTarget[Math.floor(Math.random() * nuevoTarget.length)];
+        }
+
+        inhibitionRef.current = newInhibition;
+
+        setElegir(seleccion);
+        setTarget(nuevoTarget);
+        setInhibition(inhibitionRef.current);
+        setSelected([]);
+        setRoundTime(phase.roundTime);
+        roundsStartTimeRef.current = phase.roundTime;
         setFeedBack(null);
-    }, [configGame, configRound]);
+    }, []);
 
     const startGame = () => {
         setGameTime(configGame);
-        setScore(0);
+        setScore(savedScore);
         setIsPlaying(true);
         setGameOver(false);
         generarNuevaRonda();
-    }
-
-    const togglePause = () => {
-        setPaused(!isPaused);
     };
 
-    const toggleSettings = () => {
-        setShowSettings(!showSettings);
-    }
-
-    const handleLeave = () => {
-        navigation.goBack();
-    };
+    const togglePause = () => setPaused(!isPaused);
+    const toggleSettings = () => setShowSettings(!showSettings);
+    const handleLeave = () => navigation.goBack();
 
     const handleAnswer = (selectedShape: ShapeType) => {
-        if (!isPlaying || isPaused) return;
+        if (!isPlaying || isPaused || feedBack !== null) return;
 
-        if (selectedShape === target) {
-            setScore((prev) => prev + 10);
-            setFeedBack({ type: 'success', message: 'Correcto! +10 puntos' });
-            setTimeout(() => {
-                generarNuevaRonda();
-                setFeedBack(null);
-            }, 500);
+        const phase = currentPhaseRef.current;
+        const isTarget = targetRef.current.includes(selectedShape);
+        const alreadySelected = selectedRef.current.includes(selectedShape);
+
+        if (alreadySelected) return;
+
+        if (isTarget) {
+
+            if (selectedShape === inhibitionRef.current) {
+                const newScore = Math.max(0, scoreRef.current - phase.incorrect);
+
+                setScore(newScore);
+                saveScore(newScore);
+                check(newScore);
+                setFeedBack({ type: 'error', message: `Incorrecto! -${phase.incorrect} puntos` });
+                timeoutRef.current = setTimeout(() => generarNuevaRonda(), 1000);
+                return;
+            }
+
+            const newSelected = [...selectedRef.current, selectedShape];
+            setSelected(newSelected);
+            const validTargets = phase.target - (inhibitionRef.current ? 1 : 0);
+
+            if (newSelected.length === validTargets) {
+                const elapsed = phase.roundTime - roundTimeRef.current;
+                const racha = phase.streak ? streakRef.current : 0;
+                const isBonus = elapsed <= phase.bonusTime;
+                const points = (isBonus ? phase.correctBonus : phase.correct) + racha;
+                const newScore = scoreRef.current + points;
+
+                if (phase.streak) streakRef.current += 10;
+
+                setScore(newScore);
+                saveScore(newScore);
+                check(newScore); // fix: también se llama al acertar para subir de fase
+                setFeedBack({ type: 'success', message: `Correcto! +${points} puntos` });
+                timeoutRef.current = setTimeout(() => {
+                    setFeedBack(null);
+                    generarNuevaRonda();
+                }, 500);
+            }
         } else {
-            setFeedBack({ type: 'error', message: 'Incorrecto!' });
-            setTimeout(() => {
-                generarNuevaRonda();
-                setFeedBack(null);
-            }, 1000);
+            const newScore = Math.max(0, scoreRef.current - phase.incorrect);
+
+            if (phase.streak) streakRef.current = 0;
+            setScore(newScore);
+            saveScore(newScore);
+            check(newScore);
+            setFeedBack({ type: 'error', message: `Incorrecto! -${phase.incorrect} puntos` });
+            timeoutRef.current = setTimeout(() => generarNuevaRonda(), 1000);
         }
     };
 
+    // Cambio de fase: generar nueva ronda con las reglas actualizadas
+    // isFirstRender evita que se dispare al montar el componente
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+        if (isPlaying && !isPaused) {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            setTimeout(() => generarNuevaRonda(), 300);
+        }
+    }, [currentPhase]);
+
+    // Timer del juego
     useEffect(() => {
         if (!isPlaying || isPaused) return;
 
@@ -105,16 +190,16 @@ export function ShapesGameScreen({ navigation }: Props) {
         return () => clearInterval(gameInterval);
     }, [isPlaying, isPaused]);
 
+    // Timer de ronda
     useEffect(() => {
-        if (!isPlaying || isPaused) return
+        if (!isPlaying || isPaused) return;
 
         const roundInterval = setInterval(() => {
             setRoundTime((prev) => {
                 if (prev <= 0.1) {
                     generarNuevaRonda();
-                    return configRound;
+                    return currentPhaseRef.current.roundTime; // fix: usa la fase actual, no configRound
                 }
-
                 return prev - 0.1;
             });
         }, 100);
@@ -156,10 +241,11 @@ export function ShapesGameScreen({ navigation }: Props) {
                         <Timer
                             label="Tiempo de ronda"
                             time={roundTime}
-                            maxTime={configRound}
+                            maxTime={currentPhase.roundTime}
                             variant="round"
                         />
                     </View>
+
                     {feedBack && (
                         <View style={[styles.feedbackToast, feedBack.type === 'success' ? styles.feedbackSuccess : styles.feedbackError]}>
                             <Text style={styles.feedbackText}>{feedBack.message}</Text>
@@ -182,16 +268,18 @@ export function ShapesGameScreen({ navigation }: Props) {
                             <View style={styles.settingsCard}>
                                 <Text style={styles.settingsTitle}> Configuración del Juego </Text>
                                 <View style={styles.settingsRow}>
-                                    <TextInput style={styles.input} keyboardType="numeric" value={configGame.toString()}
-                                        onChangeText={(text) => setConfigGame(Number(text))} placeholder="Tiempo del juego (segundos)" />
-                                    <Text style={styles.settingsLabel}> Segundos </Text>
-                                    <TextInput style={styles.input} keyboardType="numeric" value={configRound.toString()}
-                                        onChangeText={(text) => setConfigRound(Number(text))} placeholder="Tiempo de ronda (segundos)" />
-                                    <Text style={styles.settingsLabel}> Segundos </Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        keyboardType="numeric"
+                                        value={configGame.toString()}
+                                        onChangeText={(text) => setConfigGame(Number(text))}
+                                        placeholder="Tiempo del juego (segundos)"
+                                    />
+                                    <Text style={styles.settingsLabel}> Tiempo del Juego (s) </Text>
                                 </View>
                                 <TouchableOpacity onPress={toggleSettings} style={styles.resumeButton}>
-                                        <Text style={styles.resumeButtonText}> Guardar </Text>
-                                    </TouchableOpacity>
+                                    <Text style={styles.resumeButtonText}> Guardar </Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
                     </Modal>
@@ -205,7 +293,7 @@ export function ShapesGameScreen({ navigation }: Props) {
                         </View>
                     )}
 
-                    {/* Pantalla Game Over*/}
+                    {/* Pantalla Game Over */}
                     {gameOver && (
                         <View style={styles.gameOver}>
                             <View style={styles.gameOverCard}>
@@ -222,13 +310,24 @@ export function ShapesGameScreen({ navigation }: Props) {
                     {/* Playing Area */}
                     {isPlaying && !isPaused && (
                         <View style={styles.playingArea}>
+                            <View style={styles.targetSection}>
+                                <Text style={styles.sectionTitle}> {target.length > 1 ? 'Encuentra las formas' : 'Encuentra esta forma'} </Text>
+                                <View style={styles.targetWrapper}>
+                                    {target.map((t, index) => (
+                                        <View key={index} style={[t === inhibition && styles.shapeInhibition]}>
+                                            <Shape type={t} size={80} color={SHAPE_COLORS[t]} />
+                                        </View>
+                                    ))}
+                                </View>
+                            </View>
+
                             <View style={styles.choiceSection}>
                                 <Text style={styles.sectionTitle}> Elige la figura correcta </Text>
                                 <View style={styles.shapesGrid}>
                                     {elegir.map((shape, index) => (
                                         <TouchableOpacity
                                             key={index}
-                                            style={styles.shapeChoice}
+                                            style={[styles.shapeChoice, selected.includes(shape) && styles.shapeSelected]}
                                             onPress={() => handleAnswer(shape)}>
                                             <Shape type={shape} size={80} color={SHAPE_COLORS[shape]} />
                                         </TouchableOpacity>
@@ -236,17 +335,10 @@ export function ShapesGameScreen({ navigation }: Props) {
                                 </View>
                             </View>
 
-                            <View style={styles.targetSection}>
-                                <Text style={styles.sectionTitle}> Encuentra esta forma </Text>
-                                <View style={styles.targetWrapper}>
-                                    <Shape type={target} size={80} color={SHAPE_COLORS[target]} />
-                                </View>
-                            </View>
                         </View>
                     )}
                 </View>
             </ScrollView>
         </SafeAreaView>
-    )
-
+    );
 }

@@ -5,6 +5,7 @@ import { ColorsGameStyles as styles } from "../styles/ColoresGameStyles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Pause, Play, LogOut, Settings } from "lucide-react-native";
 import { TouchableOpacity, View, Text, ScrollView, Modal, TextInput } from "react-native";
+import { LinearGradient } from 'expo-linear-gradient';
 
 type ColorsGameScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -12,11 +13,21 @@ type Props = {
     navigation: ColorsGameScreenNavigationProp
 }
 
+const colores = [
+    { color: "#ff0000", nombre: "Rojo" },
+    { color: "#00ff00", nombre: "Verde" },
+    { color: "#ffff00", nombre: "Amarillo" },
+    { color: "#0000ff", nombre: "Azul" },
+    { color: "#fc830b", nombre: "Naranja" },
+    { color: "#ff40b4", nombre: "Rosa" },
+    { color: "#ffffff", nombre: "Blanco" },
+]
+
 export function ColorsGameScreen({ navigation }: Props) {
 
     const [configGame, setConfigGame] = useState(30);
     const [configRound, setConfigRound] = useState(5);
-    const [configInterval, setConfigInterval] = useState(3);
+    const [configInterval, setConfigInterval] = useState(3000);
 
     const [isPaused, setPaused] = useState(false);
     const [currentColor, setCurrentColor] = useState("black");
@@ -27,33 +38,56 @@ export function ColorsGameScreen({ navigation }: Props) {
     const [isPlaying, setisPlaying] = useState(false);
     const [gameOver, setGameOver] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [coloresActivos, setColoresActivos] = useState(colores.map(c => c.color))
+    const [repeticiones, setRepeticiones] = useState(0); 
+    const [consecutivo, setConsecutivo]= useState(0); 
+    const [ultimoColor, setUltimoColor]= useState<string | null>(null); 
 
-    const colores = [
-        "red",
-        "blue",
-        "yellow",
-        "purple",
-    ]
+    const toggleColor = (color: string) => {
+        setColoresActivos(prev =>
+            prev.includes(color)
+                ? prev.filter(c => c !== color)
+                : [...prev, color]
+        );
+    };
 
-    const getRandomColor = () => {
-        return colores[Math.floor(Math.random() * colores.length)]; 
-    }
+
+    const getRandomColor = useCallback(() => {
+        const disponibles = coloresActivos.length > 0 ? coloresActivos : colores.map(c => c.color); 
+        const filtrados= (consecutivo >= 2 && ultimoColor) 
+        ? disponibles.filter(c => c !== ultimoColor) 
+        : disponibles;  
+
+        const selected= filtrados[Math.floor(Math.random() * filtrados.length)];
+        
+        if(selected === ultimoColor){
+            setConsecutivo(prev => prev + 1); 
+        } else {
+            setConsecutivo(1); 
+            setUltimoColor(selected);
+        }
+
+        return selected; 
+    }, [coloresActivos, consecutivo, ultimoColor]);
 
     const generarNuevaRonda = useCallback(() => {
         setIsInterval(false);
         setCurrentColor(getRandomColor());
         setRoundTime(configRound);
-        setIntervalTime(configInterval);
-    }, [configRound, configInterval])
+        setIntervalTime(configInterval / 1000);
+    }, [configRound, configInterval, getRandomColor])
 
     const startGame = () => {
+        setRepeticiones(prev => prev + 1);
         setIsInterval(false);
         setGameTime(configGame);
         setRoundTime(configRound)
         setisPlaying(true)
         setGameOver(false)
         setCurrentColor(getRandomColor());
-        setIntervalTime(configInterval);
+        setIntervalTime(configInterval / 1000); 
+        setConsecutivo(0); 
+        setUltimoColor(null);
     }
 
     const togglePause = () => {
@@ -65,7 +99,16 @@ export function ColorsGameScreen({ navigation }: Props) {
     }
 
     const handleLeave = () => {
-        navigation.goBack();
+
+        if (!isPlaying && !gameOver && !isPaused) {
+            navigation.goBack();
+            return;
+        }
+        else {
+            setPaused(false);
+            setisPlaying(false);
+            setGameOver(false);
+        }
     };
 
     useEffect(() => {
@@ -140,7 +183,17 @@ export function ColorsGameScreen({ navigation }: Props) {
                 <Modal visible={isPaused && isPlaying && !gameOver} transparent animationType="fade">
                     <View style={styles.overlay}>
                         <View style={styles.pauseCard}>
-                            <Text style={styles.pauseTitle}> Juego Pausado </Text>
+                            <Text style={styles.pauseTitle}> PAUSA </Text>
+                            <Text style={styles.cardLabel}> Tiempo </Text>
+                            <Text style={styles.cardTime}>
+                                {String(Math.floor(gameTime / 60)).padStart(2, '0')}:
+                                {String(Math.floor((configGame - gameTime) % 60)).padStart(2, '0')}
+                            </Text>
+                            <View style={styles.pauseProgressBar}>
+                                <View style={styles.pauseProgressTrack}>
+                                    <View style={[styles.pauseProgressFill, { width: `${(gameTime / configGame) * 100}%` }]} />
+                                </View>
+                            </View>
                             <TouchableOpacity onPress={togglePause} style={styles.resumeButton}>
                                 <Text style={styles.resumeButtonText}> Continuar </Text>
                             </TouchableOpacity>
@@ -183,32 +236,53 @@ export function ColorsGameScreen({ navigation }: Props) {
                         </View>
                     )}
 
-                    <Modal visible={isPaused && isPlaying && !gameOver} transparent animationType="fade">
-                        <View style={styles.overlay}>
-                            <View style={styles.pauseCard}>
-                                <Text style={styles.pauseTitle}> Juego Pausado </Text>
-                                <TouchableOpacity onPress={togglePause} style={styles.resumeButton}>
-                                    <Text style={styles.resumeButtonText}> Continuar </Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </Modal>
-
                     <Modal visible={settingsOpen && !(isPlaying && !gameOver)} transparent animationType="fade">
                         <View style={styles.overlay}>
                             <View style={styles.settingsCard}>
-                                <Text style={styles.settingsTitle}> Configuración del Juego </Text>
+                                <Text style={styles.settingsTitle}> Configuración </Text>
                                 <View style={styles.settingsRow}>
                                     <TextInput style={styles.input} keyboardType="numeric" value={configGame.toString()}
                                         onChangeText={(text) => setConfigGame(Number(text))} placeholder="Tiempo del juego (segundos)" />
-                                    <Text style={styles.settingsLabel}> Segundos </Text>
+                                    <Text style={styles.settingsLabel}> Tiempo del Juego (s) </Text>
                                     <TextInput style={styles.input} keyboardType="numeric" value={configRound.toString()}
                                         onChangeText={(text) => setConfigRound(Number(text))} placeholder="Tiempo de ronda (segundos)" />
-                                    <Text style={styles.settingsLabel}> Segundos </Text>
+                                    <Text style={styles.settingsLabel}> Tiempo por Color (s) </Text>
                                     <TextInput style={styles.input} keyboardType="numeric" value={configInterval.toString()}
                                         onChangeText={(text) => setConfigInterval(Number(text))} placeholder="Tiempo intervalo (segundos)" />
-                                    <Text style={styles.settingsLabel}> Segundos </Text>
+                                    <Text style={styles.settingsLabel}> Tiempo Intervalo (ms) </Text>
                                 </View>
+                                <Text style={styles.settingsLabel}> Colores </Text>
+                                {colores.map((item) => (
+                                    <TouchableOpacity
+                                        key={item.color}
+                                        onPress={() => toggleColor(item.color)}
+                                        style={{
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            marginVertical: 10,
+                                            gap: 12,
+                                        }}
+                                    >
+                                        <View style={{
+                                            width: 17,
+                                            height: 17,
+                                            borderRadius: 4,
+                                            borderWidth: 2,
+                                            borderColor: "#000",
+                                            backgroundColor: coloresActivos.includes(item.color) ? "#2bff00" : "#fff",
+                                        }} />
+
+                                        <View style={{
+                                            width: 18,
+                                            height: 18,
+                                            backgroundColor: item.color,
+                                            borderRadius: 4,
+                                            borderWidth: 1,
+                                            borderColor: "#ccc",
+                                        }} />
+                                        <Text style={{ width: 80 }}>{item.nombre}</Text>
+                                    </TouchableOpacity>
+                                ))}
                                 <TouchableOpacity onPress={toggleSettings} style={styles.resumeButton}>
                                     <Text style={styles.resumeButtonText}> Guardar </Text>
                                 </TouchableOpacity>
@@ -219,7 +293,20 @@ export function ColorsGameScreen({ navigation }: Props) {
                     {gameOver && (
                         <View style={styles.gameOver}>
                             <View style={styles.gameOverCard}>
-                                <Text style={styles.gameOverTitle}> Juego Terminado! </Text>
+                                <LinearGradient
+                                    colors={['#ff0000', '#ffff00', '#00ff00']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    style={styles.gradientBar}
+                                />
+                                <Text style={styles.gameOverTitle}> RESUMEN </Text>
+                                <Text style={styles.cardLabel}>Tiempo</Text>
+                                <Text style={styles.cardTime}>
+                                    {String(Math.floor(gameTime / 60)).padStart(2, '0')}:
+                                    {String(Math.floor((configGame - gameTime) % 60)).padStart(2, '0')}
+                                </Text>
+                                <Text style={styles.cardLabel}>Repeticiones</Text>
+                                <Text style={styles.cardTime}>{String(repeticiones).padStart(2, '0')}</Text>
                                 <TouchableOpacity onPress={startGame} style={styles.restartButton}>
                                     <Text style={styles.restartButtonText}> Volver a jugar </Text>
                                 </TouchableOpacity>
