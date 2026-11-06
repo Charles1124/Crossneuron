@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
 import * as ScreenOrientation from "expo-screen-orientation";
-import { Home, Gamepad2, Book, User } from 'lucide-react-native'
+import { Home, Gamepad2, HeartPulse, User } from 'lucide-react-native'
 
 import { Login } from "./screens/Login"
 import { Register } from "./screens/Register";
 import { ForgotPassword } from "./screens/ForgotPassword";
 import { HomeScreen } from "./screens/Home";
 import { GamesScreen } from "./screens/Games"
+import { TrainingScreen } from "./screens/Training";
 import { ProfileScreen } from "./screens/Profile";
 import { ShapesGameScreen } from './Games/ShapesGame';
 import { ColorsGameScreen } from './Games/ColorsGame';
@@ -32,7 +33,7 @@ export type RootStackParamList = {
 export type HomeTabParamList = {
     Home: undefined,
     Games: undefined,
-    Exercises: undefined,
+    Training: undefined,
     Profile: undefined,
 };
 
@@ -65,7 +66,7 @@ function MainTabs() {
                 name="Games"
                 component={GamesScreen}
                 options={{
-                    title: 'Juegos',
+                    title: 'EC',
                     tabBarIcon: ({ color, size }) => (
                         <Gamepad2 color={color} size={size} />
                     ),
@@ -73,12 +74,12 @@ function MainTabs() {
             />
 
             <Tab.Screen
-                name="Exercises"
-                component={Book}
+                name="Training"
+                component={TrainingScreen}
                 options={{
-                    title: 'Ejercicios',
+                    title: 'ECM',
                     tabBarIcon: ({ color, size }) => (
-                        <Book color={color} size={size} />
+                        <HeartPulse color={color} size={size} />
                     ),
                 }}
             />

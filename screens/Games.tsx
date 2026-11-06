@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from 'react-native';
-import { Shapes, Palette, Workflow, ChevronRight } from 'lucide-react-native';
+import { Shapes, Workflow, ChevronRight } from 'lucide-react-native';
 import { GamesMenu as styles } from '../styles/GamesMenuStyles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -31,13 +31,6 @@ const GAMES: GameItem[] = [
         description: 'Identifica y elige la figura correcta antes de que se acabe el tiempo.',
         gradient: ['hsl(221,83%,53%)', 'hsl(245,75%,60%)'],
         route: 'ShapesGame',
-    },
-    {
-        icon: Palette,
-        title: 'Colores',
-        description: 'Ejercita tu memoria y atención con patrones de colores.',
-        gradient: ['hsl(16,85%,60%)', 'hsl(35,90%,55%)'],
-        route: 'ColorsGame',
     },
     {
         icon: Workflow,

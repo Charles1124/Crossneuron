@@ -36,7 +36,7 @@ export const Shape = ({ type, style, color = "#000", size = 100, onPress }: Shap
                 return <Rect x="10" y="25" width="80" height="50" rx="6" fill={color} />;
 
             case "pentagon":
-                return <Path d="M 50 10 L 90 35 L 75 80 L 25 80 L 10 35 Z" fill={color} />;
+                return <Path d="M 50 10 L 90 35 L 75 80 L 25 80 L 10 35 Z" fill={color} />;  
 
             default: return null;
         }
